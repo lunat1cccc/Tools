@@ -1,63 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>String List to Custom Format Converter</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        #input {
-            width: 100%;
-            height: 200px;
-            margin-bottom: 10px;
-        }
-        #output {
-            width: 100%;
-            height: 300px;
-            margin-bottom: 10px;
-        }
-        button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .error {
-            color: red;
-            font-weight: bold;
-        }
-    </style>
+    <title>格式转换器 - 在线工具集</title>
+    <link rel="stylesheet" href="common.css">
 </head>
 <body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span>🔧</span>
+                <span>工具箱</span>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link">
+                            <span class="nav-icon">◎</span>
+                            <span>全部工具</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="JsonConverter.html" class="nav-link">
+                            <span class="nav-icon">{}</span>
+                            <span>JSON 美化</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="Base64.html" class="nav-link">
+                            <span class="nav-icon">🔠</span>
+                            <span>Base64 编解码</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="TransFormat.html" class="nav-link active">
+                            <span class="nav-icon">⚡</span>
+                            <span>格式转换器</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="ToSplit.html" class="nav-link">
+                            <span class="nav-icon">↔️</span>
+                            <span>列转行工具</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
 
-    <h1>String List to Custom Format Converter</h1>
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">格式转换器</h1>
+                <p class="page-description">
+                    将字符串列表转换为自定义格式，支持批量处理。每行一个字符串，自动生成带引号和括号的格式。
+                </p>
+            </div>
 
-    <textarea id="input" placeholder="Enter your strings here, one per line..."></textarea>
-    <button onclick="convertToCustomFormat()">Convert</button>
-    <div id="error-message" class="error"></div>
-    <textarea id="output" placeholder="Output will appear here..." readonly></textarea>
+            <div class="tool-card">
+                <div class="textarea-wrapper">
+                    <label class="textarea-label">输入字符串列表（每行一个）</label>
+                    <textarea id="input" rows="10" placeholder="请输入字符串，每行一个...&#10;例如：&#10;apple&#10;banana&#10;orange"></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="convertToCustomFormat()">
+                        ⚡ 转换格式
+                    </button>
+                    <button class="btn btn-outline" onclick="clearAll()">
+                        🗑️ 清空
+                    </button>
+                </div>
+
+                <div id="error-message" class="error-message"></div>
+
+                <div class="textarea-wrapper">
+                    <label class="textarea-label">转换结果</label>
+                    <textarea id="output" rows="12" placeholder="转换结果将显示在这里...&#10;例如：('apple','banana','orange')" readonly></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="copyResult()">
+                        📋 复制结果
+                    </button>
+                </div>
+            </div>
+
+            <footer class="footer">
+                <p>© 2025 在线工具集. 所有处理在本地完成</p>
+            </footer>
+        </main>
+    </div>
 
     <script>
         function convertToCustomFormat() {
             const input = document.getElementById('input').value;
-            const errorMessage = document.getElementById('error-message');
             const output = document.getElementById('output');
             
-            // Split input into lines
+            // Split input into lines and filter empty lines
             const lines = input.split('\n').map(line => line.trim()).filter(line => line);
             
             if (lines.length === 0) {
-                errorMessage.textContent = 'No valid input provided.';
+                showError('请输入至少一行内容');
                 output.value = '';
                 return;
             }
@@ -66,10 +112,49 @@
             const formattedLines = lines.map(line => `'${line}'`).join(',');
             const result = `(${formattedLines})`;
             
-            errorMessage.textContent = ''; // Clear any previous error messages
             output.value = result;
+            hideError();
+        }
+
+        function clearAll() {
+            document.getElementById('input').value = '';
+            document.getElementById('output').value = '';
+            hideError();
+        }
+
+        function copyResult() {
+            const output = document.getElementById('output');
+            if (!output.value) {
+                showError('没有可复制的内容');
+                return;
+            }
+            
+            output.select();
+            document.execCommand('copy');
+            
+            // 临时显示成功消息
+            document.getElementById('error-message').style.backgroundColor = '#f0fdf4';
+            document.getElementById('error-message').style.color = '#16a34a';
+            showError('✓ 复制成功！');
+            
+            setTimeout(() => {
+                hideError();
+                document.getElementById('error-message').style.backgroundColor = '';
+                document.getElementById('error-message').style.color = '';
+            }, 2000);
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+        }
+
+        function hideError() {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = '';
+            errorElement.classList.remove('show');
         }
     </script>
-
 </body>
 </html>

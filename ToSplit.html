@@ -2,108 +2,195 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <title>一列数据转一行</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root { color-scheme: light dark; }
-    body { font-family: system-ui, Arial, sans-serif; margin: 2rem; }
-    h1 { font-size: 1.25rem; margin-bottom: 0.5rem; }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      align-items: start;
-    }
-    textarea, input[type="text"] {
-      width: 100%; box-sizing: border-box;
-      padding: 0.75rem; border: 1px solid #ccc; border-radius: 8px;
-      font-size: 0.95rem; line-height: 1.4;
-    }
-    .btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    button {
-      padding: 0.6rem 0.9rem; border: none; border-radius: 8px;
-      background: #0a7cff; color: #fff; cursor: pointer; font-size: 0.95rem;
-    }
-    button.secondary { background: #555; }
-    .small { font-size: 0.85rem; color: #666; margin-top: 0.25rem; }
-    .out-wrap { display: flex; gap: 0.5rem; align-items: center; }
-    .note { margin-top: 0.75rem; color: #888; font-size: 0.85rem; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>列转行工具 - 在线工具集</title>
+    <link rel="stylesheet" href="common.css">
 </head>
 <body>
-  <h1>将一列数据转成一行</h1>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span>🔧</span>
+                <span>工具箱</span>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link">
+                            <span class="nav-icon">◎</span>
+                            <span>全部工具</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="JsonConverter.html" class="nav-link">
+                            <span class="nav-icon">{}</span>
+                            <span>JSON 美化</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="Base64.html" class="nav-link">
+                            <span class="nav-icon">🔠</span>
+                            <span>Base64 编解码</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="TransFormat.html" class="nav-link">
+                            <span class="nav-icon">⚡</span>
+                            <span>格式转换器</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="ToSplit.html" class="nav-link active">
+                            <span class="nav-icon">↔️</span>
+                            <span>列转行工具</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
 
-  <div class="grid">
-    <!-- 输入区 -->
-    <div>
-      <label for="input">在此粘贴一列数据（每行一个值）：</label>
-      <textarea id="input" rows="14" placeholder="例如：
-a
-b
-c
-"></textarea>
-      <div class="small">空行会自动忽略；每行的前后空格会自动移除。</div>
-      <div class="btns" style="margin-top: 0.75rem;">
-        <button id="btnComma">用逗号 , 分隔</button>
-        <button id="btnQuotedComma">用 ',' 分隔（每项加单引号）</button>
-        <button id="btnClear" class="secondary" title="清空输入">清空</button>
-      </div>
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">列转行工具</h1>
+                <p class="page-description">
+                    将一列数据快速转换成一行，支持逗号分隔和引号包裹。适合用于 SQL、CSV、日志或命令行参数。
+                </p>
+            </div>
+
+            <div class="tool-card">
+                <div class="textarea-wrapper">
+                    <label class="textarea-label">输入数据（每行一个值）</label>
+                    <textarea id="input" rows="12" placeholder="请输入数据，每行一个值：&#10;例如：&#10;apple&#10;banana&#10;orange"></textarea>
+                    <p style="font-size: 13px; color: #64748b; margin-top: 8px;">
+                        💡 空行会自动忽略，每行的前后空格会自动移除
+                    </p>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" id="btnComma">
+                        📝 逗号分隔
+                    </button>
+                    <button class="btn btn-secondary" id="btnQuotedComma">
+                        📋 带引号分隔
+                    </button>
+                    <button class="btn btn-outline" id="btnClear">
+                        🗑️ 清空
+                    </button>
+                </div>
+
+                <div id="error-message" class="error-message"></div>
+
+                <div class="textarea-wrapper">
+                    <label class="textarea-label">转换结果</label>
+                    <textarea id="output" rows="6" placeholder="结果会显示在这里..." readonly></textarea>
+                    <p style="font-size: 13px; color: #64748b; margin-top: 8px;">
+                        ✨ 结果已是一行文本，适合直接粘贴使用
+                    </p>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-success" id="btnCopy">
+                        📋 复制结果
+                    </button>
+                </div>
+            </div>
+
+            <footer class="footer">
+                <p>© 2025 在线工具集. 所有处理在本地完成</p>
+            </footer>
+        </main>
     </div>
 
-    <!-- 输出区 -->
-    <div>
-      <label for="output">结果（一行）：</label>
-      <div class="out-wrap">
-        <input id="output" type="text" readonly placeholder="结果会显示在这里" />
-        <button id="btnCopy" class="secondary">复制</button>
-      </div>
-      <div class="note">提示：结果已是一行文本，适合直接粘贴到 SQL、CSV、日志或命令行参数中。</div>
-    </div>
-  </div>
+    <script>
+        function getCleanItems() {
+            const raw = document.getElementById('input').value || '';
+            return raw
+                .split(/\r?\n/)               // 按行分割
+                .map(s => s.trim())           // 去掉前后空格
+                .filter(s => s.length > 0);   // 过滤空行
+        }
 
-  <script>
-    function getCleanItems() {
-      const raw = document.getElementById('input').value || '';
-      return raw
-        .split(/\r?\n/)               // 按行分割
-        .map(s => s.trim())           // 去掉前后空格
-        .filter(s => s.length > 0);   // 过滤空行
-    }
+        function setOutput(text) {
+            const out = document.getElementById('output');
+            out.value = text;
+        }
 
-    function setOutput(text) {
-      const out = document.getElementById('output');
-      out.value = text;
-    }
+        document.getElementById('btnComma').addEventListener('click', () => {
+            const items = getCleanItems();
+            if (items.length === 0) {
+                showError('请输入至少一行内容');
+                return;
+            }
+            setOutput(items.join(','));
+            hideError();
+        });
 
-    document.getElementById('btnComma').addEventListener('click', () => {
-      const items = getCleanItems();
-      setOutput(items.join(','));
-    });
+        document.getElementById('btnQuotedComma').addEventListener('click', () => {
+            const items = getCleanItems().map(s => `'${s.replace(/'/g, "\\'")}'`);
+            if (items.length === 0) {
+                showError('请输入至少一行内容');
+                return;
+            }
+            setOutput(items.join(','));
+            hideError();
+        });
 
-    document.getElementById('btnQuotedComma').addEventListener('click', () => {
-      const items = getCleanItems().map(s => `'${s.replace(/'/g, "\\'")}'`);
-      setOutput(items.join(','));
-    });
+        document.getElementById('btnCopy').addEventListener('click', async () => {
+            const text = document.getElementById('output').value;
+            if (!text) {
+                showError('没有可复制的内容');
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(text);
+                document.getElementById('error-message').style.backgroundColor = '#f0fdf4';
+                document.getElementById('error-message').style.color = '#16a34a';
+                showError('✓ 复制成功！');
+                setTimeout(() => {
+                    hideError();
+                    document.getElementById('error-message').style.backgroundColor = '';
+                    document.getElementById('error-message').style.color = '';
+                }, 2000);
+            } catch (e) {
+                // 降级方案：使用传统的复制方式
+                const output = document.getElementById('output');
+                output.select();
+                try {
+                    document.execCommand('copy');
+                    document.getElementById('error-message').style.backgroundColor = '#f0fdf4';
+                    document.getElementById('error-message').style.color = '#16a34a';
+                    showError('✓ 复制成功！');
+                    setTimeout(() => {
+                        hideError();
+                        document.getElementById('error-message').style.backgroundColor = '';
+                        document.getElementById('error-message').style.color = '';
+                    }, 2000);
+                } catch (err) {
+                    showError('复制失败，请手动选中结果文本后 Ctrl/Cmd+C 复制');
+                }
+            }
+        });
 
-    document.getElementById('btnCopy').addEventListener('click', async () => {
-      const text = document.getElementById('output').value;
-      if (!text) return;
-      try {
-        await navigator.clipboard.writeText(text);
-        const btn = document.getElementById('btnCopy');
-        const prev = btn.textContent;
-        btn.textContent = '已复制';
-        setTimeout(() => (btn.textContent = prev), 1200);
-      } catch (e) {
-        alert('复制失败，请手动选中结果文本后 Ctrl/Cmd+C 复制。');
-      }
-    });
+        document.getElementById('btnClear').addEventListener('click', () => {
+            document.getElementById('input').value = '';
+            setOutput('');
+            hideError();
+        });
 
-    document.getElementById('btnClear').addEventListener('click', () => {
-      document.getElementById('input').value = '';
-      setOutput('');
-    });
-  </script>
+        function showError(message) {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+        }
+
+        function hideError() {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = '';
+            errorElement.classList.remove('show');
+        }
+    </script>
 </body>
 </html>

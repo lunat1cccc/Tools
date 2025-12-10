@@ -1,72 +1,183 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>String to JSON Converter</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        #input{
-            width: 100%;
-            height: 200px;
-            margin-bottom: 10px;
-        }
-        #output{
-            width: 100%;
-            height: 300px;
-            margin-bottom: 10px;
-        }
-        button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .error {
-            color: red;
-            font-weight: bold;
-        }
-    </style>
+    <title>JSON 美化 - 在线工具集</title>
+    <link rel="stylesheet" href="common.css">
 </head>
 <body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span>🔧</span>
+                <span>工具箱</span>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link">
+                            <span class="nav-icon">◎</span>
+                            <span>全部工具</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="JsonConverter.html" class="nav-link active">
+                            <span class="nav-icon">{}</span>
+                            <span>JSON 美化</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="Base64.html" class="nav-link">
+                            <span class="nav-icon">🔠</span>
+                            <span>Base64 编解码</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="TransFormat.html" class="nav-link">
+                            <span class="nav-icon">⚡</span>
+                            <span>格式转换器</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="ToSplit.html" class="nav-link">
+                            <span class="nav-icon">↔️</span>
+                            <span>列转行工具</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
 
-    <h1>String to JSON Converter</h1>
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">JSON 美化</h1>
+                <p class="page-description">
+                    免费在线 JSON 格式化工具，支持 JSON 代码格式化、美化、压缩、验证。所有处理在本地完成，保护您的隐私安全。
+                </p>
+            </div>
 
-    <textarea id="input" placeholder="Enter your string here..."></textarea>
-    <button onclick="convertToJson()">Convert to JSON</button>
-    <div id="error-message" class="error"></div>
-    <textarea id="output" placeholder="JSON output will appear here..." readonly></textarea>
+            <div class="tool-card">
+                <div class="textarea-wrapper">
+                    <label class="textarea-label">输入 JSON</label>
+                    <textarea id="input" rows="10" placeholder="在此输入 JSON 内容..."></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="formatJson()">
+                        ✨ 格式化
+                    </button>
+                    <button class="btn btn-secondary" onclick="compressJson()">
+                        📦 压缩
+                    </button>
+                    <button class="btn btn-outline" onclick="clearAll()">
+                        🗑️ 清空
+                    </button>
+                </div>
+
+                <div id="error-message" class="error-message"></div>
+
+                <div class="textarea-wrapper">
+                    <label class="textarea-label">转换结果</label>
+                    <textarea id="output" rows="12" placeholder="格式化后的 JSON 将显示在这里..." readonly></textarea>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-success" onclick="copyResult()">
+                        📋 复制结果
+                    </button>
+                </div>
+            </div>
+
+            <footer class="footer">
+                <p>© 2025 在线工具集. 所有处理在本地完成</p>
+            </footer>
+        </main>
+    </div>
 
     <script>
-        function convertToJson() {
+        function formatJson() {
             const input = document.getElementById('input').value;
             const errorMessage = document.getElementById('error-message');
-            let jsonOutput;
+            const output = document.getElementById('output');
 
-            try {
-                // Try to parse the input as JSON
-                const parsedInput = JSON.parse(input);
-                jsonOutput = JSON.stringify(parsedInput, null, 2);
-                errorMessage.textContent = ''; // Clear any previous error messages
-            } catch (e) {
-                // If parsing fails, show error message
-                errorMessage.textContent = 'Conversion failed, please check your input content.';
-                jsonOutput = '';
+            if (!input.trim()) {
+                showError('请输入 JSON 内容');
+                return;
             }
 
-            document.getElementById('output').value = jsonOutput;
+            try {
+                const parsedInput = JSON.parse(input);
+                output.value = JSON.stringify(parsedInput, null, 2);
+                hideError();
+            } catch (e) {
+                showError('JSON 格式错误：' + e.message);
+                output.value = '';
+            }
+        }
+
+        function compressJson() {
+            const input = document.getElementById('input').value;
+            const errorMessage = document.getElementById('error-message');
+            const output = document.getElementById('output');
+
+            if (!input.trim()) {
+                showError('请输入 JSON 内容');
+                return;
+            }
+
+            try {
+                const parsedInput = JSON.parse(input);
+                output.value = JSON.stringify(parsedInput);
+                hideError();
+            } catch (e) {
+                showError('JSON 格式错误：' + e.message);
+                output.value = '';
+            }
+        }
+
+        function clearAll() {
+            document.getElementById('input').value = '';
+            document.getElementById('output').value = '';
+            hideError();
+        }
+
+        function copyResult() {
+            const output = document.getElementById('output');
+            if (!output.value) {
+                showError('没有可复制的内容');
+                return;
+            }
+            
+            output.select();
+            document.execCommand('copy');
+            
+            // 临时显示成功消息
+            const originalError = document.getElementById('error-message').innerHTML;
+            document.getElementById('error-message').style.backgroundColor = '#f0fdf4';
+            document.getElementById('error-message').style.color = '#16a34a';
+            showError('✓ 复制成功！');
+            
+            setTimeout(() => {
+                hideError();
+                document.getElementById('error-message').style.backgroundColor = '';
+                document.getElementById('error-message').style.color = '';
+            }, 2000);
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = message;
+            errorElement.classList.add('show');
+        }
+
+        function hideError() {
+            const errorElement = document.getElementById('error-message');
+            errorElement.textContent = '';
+            errorElement.classList.remove('show');
         }
     </script>
-
 </body>
 </html>

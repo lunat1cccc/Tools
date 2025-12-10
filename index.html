@@ -1,44 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Navigation Page</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        h1 {
-            margin-bottom: 20px;
-        }
-        .nav-button {
-            width: 200px;
-            padding: 10px;
-            margin: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            text-align: center;
-            border-radius: 5px;
-        }
-        .nav-button:hover {
-            background-color: #45a049;
-        }
-    </style>
+    <title>在线工具集 - 实用工具箱</title>
+    <link rel="stylesheet" href="common.css">
 </head>
 <body>
+    <div class="container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span>🔧</span>
+                <span>工具箱</span>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link active">
+                            <span class="nav-icon">◎</span>
+                            <span>全部工具</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="JsonConverter.html" class="nav-link">
+                            <span class="nav-icon">{}</span>
+                            <span>JSON 美化</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="Base64.html" class="nav-link">
+                            <span class="nav-icon">🔠</span>
+                            <span>Base64 编解码</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="TransFormat.html" class="nav-link">
+                            <span class="nav-icon">⚡</span>
+                            <span>格式转换器</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="ToSplit.html" class="nav-link">
+                            <span class="nav-icon">↔️</span>
+                            <span>列转行工具</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
 
-    <h1>Navigation Page</h1>
-    <button class="nav-button" onclick="location.href='JsonConverter.html'">JSON Formatter</button>
-    <button class="nav-button" onclick="location.href='Base64.html'">Base64 Encoder/Decoder</button>
-    <button class="nav-button" onclick="location.href='TransFormat.html'">String List to Custom Format Converter</button>
-    <button class="nav-button" onclick="location.href='privateSqlGenerate.html'">PrivateSqlGeneratePage</button>
-    <button class="nav-button" onclick="location.href='ToSplit.html'">ColToRow</button>
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">工具集</h1>
+                <p class="page-description">
+                    免费在线工具集合，包含 JSON 格式化、Base64 编解码、格式转换等常用工具。
+                </p>
+            </div>
+
+            <div class="tool-grid">
+                <a href="JsonConverter.html" class="tool-item">
+                    <div class="tool-item-icon">{}</div>
+                    <h3 class="tool-item-title">JSON 美化</h3>
+                    <p class="tool-item-description">
+                        格式化、美化、压缩 JSON 代码，支持语法验证和错误提示
+                    </p>
+                </a>
+
+                <a href="Base64.html" class="tool-item">
+                    <div class="tool-item-icon">🔠</div>
+                    <h3 class="tool-item-title">Base64 编解码</h3>
+                    <p class="tool-item-description">
+                        在线 Base64 编码和解码工具，快速转换文本数据
+                    </p>
+                </a>
+
+                <a href="TransFormat.html" class="tool-item">
+                    <div class="tool-item-icon">⚡</div>
+                    <h3 class="tool-item-title">格式转换器</h3>
+                    <p class="tool-item-description">
+                        将字符串列表转换为自定义格式，支持批量处理
+                    </p>
+                </a>
+
+                <a href="ToSplit.html" class="tool-item">
+                    <div class="tool-item-icon">↔️</div>
+                    <h3 class="tool-item-title">列转行工具</h3>
+                    <p class="tool-item-description">
+                        将一列数据快速转换成一行，支持逗号分隔和引号包裹
+                    </p>
+                </a>
+            </div>
+
+            <footer class="footer">
+                <p>© 2025 在线工具集. 所有处理在本地完成</p>
+            </footer>
+        </main>
+    </div>
 </body>
 </html>
-
