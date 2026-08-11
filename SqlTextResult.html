@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL 文本结果整理器 - 在线工具集</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+        :root {
+            --sql-bg: #f4eee2;
+            --sql-bg-accent: #ddd2bd;
+            --sql-panel: rgba(255, 250, 241, 0.9);
+            --sql-panel-strong: #fff8ee;
+            --sql-ink: #1d2b36;
+            --sql-muted: #596875;
+            --sql-line: rgba(29, 43, 54, 0.12);
+            --sql-accent: #b45a2f;
+            --sql-accent-strong: #8f411d;
+            --sql-accent-soft: rgba(180, 90, 47, 0.12);
+            --sql-teal: #2e6d68;
+            --sql-warn: #b03a2e;
+            --sql-shadow: 0 22px 50px rgba(43, 32, 18, 0.12);
+            --sql-radius-xl: 28px;
+            --sql-radius-lg: 18px;
+            --sql-radius-md: 12px;
+        }
+
+        .sql-text-tool {
+            background:
+                radial-gradient(circle at top left, rgba(180, 90, 47, 0.1), transparent 24%),
+                radial-gradient(circle at top right, rgba(46, 109, 104, 0.1), transparent 20%),
+                linear-gradient(180deg, #fbf7f0, #f7f1e7 52%, #fcfaf5 100%);
+            border-radius: 24px;
+            padding: 18px;
+        }
+
+        .hero,
+        .info-strip,
+        .summary-card,
+        .file-card,
+        .cell-dialog {
+            backdrop-filter: blur(16px);
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: minmax(280px, 1.15fr) minmax(340px, 0.95fr);
+            gap: 20px;
+            margin-bottom: 18px;
+        }
+
+        .hero__copy,
+        .drop-zone,
+        .info-strip,
+        .summary-card,
+        .file-card {
+            background: var(--sql-panel);
+            border: 1px solid rgba(255, 255, 255, 0.75);
+            border-radius: var(--sql-radius-xl);
+            box-shadow: var(--sql-shadow);
+        }
+
+        .hero__copy {
+            padding: 30px;
+        }
+
+        .eyebrow {
+            margin: 0 0 10px;
+            color: var(--sql-accent-strong);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+
+        .hero__title,
+        .summary-card__value,
+        .file-card__header h2,
+        .cell-dialog__header h2,
+        .result-set summary {
+            font-family: "Rockwell", "Georgia", serif;
+        }
+
+        .hero__title {
+            margin: 0;
+            color: var(--sql-ink);
+            font-size: clamp(2rem, 4vw, 3rem);
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+        }
+
+        .hero__text {
+            margin: 18px 0 0;
+            max-width: 60ch;
+            color: var(--sql-muted);
+            font-size: 1rem;
+            line-height: 1.75;
+        }
+
+        .drop-zone {
+            position: relative;
+            padding: 28px;
+            border: 1px dashed rgba(180, 90, 47, 0.38);
+            overflow: hidden;
+        }
+
+        .drop-zone::after {
+            content: "";
+            position: absolute;
+            inset: auto -40px -65px auto;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(180, 90, 47, 0.16), transparent 68%);
+        }
+
+        .drop-zone--active {
+            border-color: var(--sql-teal);
+            background: rgba(255, 252, 247, 0.96);
+            transform: translateY(-2px);
+        }
+
+        .drop-zone__title {
+            position: relative;
+            z-index: 1;
+            margin: 0;
+            font-family: "Rockwell", "Georgia", serif;
+            color: var(--sql-ink);
+            font-size: 1.45rem;
+        }
+
+        .drop-zone__subtitle {
+            position: relative;
+            z-index: 1;
+            margin: 8px 0 20px;
+            color: var(--sql-muted);
+            line-height: 1.6;
+        }
+
+        .drop-zone__actions {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .button {
+            appearance: none;
+            border: 0;
+            border-radius: 999px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 46px;
+            padding: 0 18px;
+            color: var(--sql-ink);
+            font: inherit;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, color 160ms ease;
+        }
+
+        .button:hover:not(:disabled),
+        .button:focus-visible:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .button:disabled {
+            cursor: not-allowed;
+            opacity: 0.45;
+        }
+
+        .button--primary {
+            background: linear-gradient(135deg, var(--sql-accent), #cc7440);
+            color: #fff9f2;
+            box-shadow: 0 12px 30px rgba(180, 90, 47, 0.22);
+        }
+
+        .button--secondary {
+            background: rgba(46, 109, 104, 0.12);
+            color: var(--sql-teal);
+        }
+
+        .button--ghost {
+            background: rgba(29, 43, 54, 0.06);
+            color: var(--sql-ink);
+        }
+
+        .upload-button {
+            user-select: none;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .info-strip {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            padding: 16px;
+            margin-bottom: 18px;
+        }
+
+        .info-strip__item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.46);
+            border: 1px solid rgba(255, 255, 255, 0.75);
+            border-radius: var(--sql-radius-lg);
+        }
+
+        .info-strip__item p {
+            margin: 0;
+            color: var(--sql-ink);
+            line-height: 1.55;
+        }
+
+        .info-strip__label {
+            flex: none;
+            display: grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(180, 90, 47, 0.14);
+            color: var(--sql-accent-strong);
+            font-weight: 800;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .summary-card {
+            padding: 18px 20px;
+        }
+
+        .summary-card h2,
+        .summary-card p {
+            margin: 0;
+            color: var(--sql-ink);
+        }
+
+        .summary-card h2 {
+            font-size: 1.1rem;
+        }
+
+        .summary-card p {
+            margin-top: 8px;
+            color: var(--sql-muted);
+            line-height: 1.6;
+        }
+
+        .summary-card__value {
+            display: block;
+            margin-top: 14px;
+            color: var(--sql-ink);
+            font-size: clamp(1.9rem, 4vw, 2.6rem);
+        }
+
+        .results {
+            display: grid;
+            gap: 18px;
+        }
+
+        .file-card {
+            padding: 22px;
+        }
+
+        .file-card__header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .file-card__header h2 {
+            margin: 0;
+            color: var(--sql-ink);
+            font-size: 1.65rem;
+            line-height: 1.1;
+            overflow-wrap: anywhere;
+        }
+
+        .file-card__meta {
+            margin: 8px 0 0;
+            color: var(--sql-muted);
+        }
+
+        .pill-row,
+        .result-set__meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pill-row {
+            margin-bottom: 12px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            min-height: 30px;
+            padding: 0 10px;
+            border-radius: 999px;
+            background: rgba(29, 43, 54, 0.07);
+            color: var(--sql-ink);
+            font-size: 0.88rem;
+            font-weight: 700;
+        }
+
+        .pill--warn {
+            background: rgba(176, 58, 46, 0.12);
+            color: var(--sql-warn);
+        }
+
+        .result-set {
+            margin-top: 16px;
+            border: 1px solid var(--sql-line);
+            border-radius: var(--sql-radius-lg);
+            background: rgba(255, 255, 255, 0.48);
+            overflow: hidden;
+        }
+
+        .result-set summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 14px 16px;
+            cursor: pointer;
+            list-style: none;
+            font-size: 1.08rem;
+            color: var(--sql-ink);
+            user-select: none;
+        }
+
+        .result-set summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .result-set__body {
+            padding: 0 16px 16px;
+        }
+
+        .result-set__meta {
+            margin-bottom: 12px;
+        }
+
+        .table-wrap {
+            overflow: auto;
+            border-radius: 14px;
+            border: 1px solid var(--sql-line);
+            background: #fffdf8;
+        }
+
+        table {
+            width: max-content;
+            min-width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: linear-gradient(180deg, #fff4e6, #f9ecdc);
+            color: var(--sql-ink);
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(29, 43, 54, 0.08);
+            border-right: 1px solid rgba(29, 43, 54, 0.08);
+            text-align: left;
+            vertical-align: top;
+            white-space: pre-wrap;
+            line-height: 1.5;
+        }
+
+        tbody tr:nth-child(even) {
+            background: rgba(29, 43, 54, 0.03);
+        }
+
+        tbody tr:hover {
+            background: rgba(46, 109, 104, 0.08);
+        }
+
+        th:last-child,
+        td:last-child {
+            border-right: 0;
+        }
+
+        .cell-button {
+            display: block;
+            width: 100%;
+            padding: 0;
+            border: 0;
+            background: transparent;
+            color: inherit;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .cell-button:hover,
+        .cell-button:focus-visible {
+            color: var(--sql-accent-strong);
+        }
+
+        .cell-button--json {
+            color: var(--sql-teal);
+            font-weight: 700;
+        }
+
+        .empty-cell {
+            padding: 16px 12px;
+            color: var(--sql-muted);
+            text-align: center;
+        }
+
+        .empty-state {
+            padding: 30px;
+        }
+
+        .empty-state h2 {
+            margin: 0;
+            color: var(--sql-ink);
+        }
+
+        .empty-state p {
+            margin: 10px 0 0;
+            color: var(--sql-muted);
+            line-height: 1.6;
+        }
+
+        .cell-dialog {
+            width: min(980px, calc(100% - 24px));
+            padding: 0;
+            border: 1px solid rgba(255, 255, 255, 0.75);
+            border-radius: var(--sql-radius-xl);
+            background: var(--sql-panel-strong);
+            color: var(--sql-ink);
+            box-shadow: 0 28px 60px rgba(29, 43, 54, 0.18);
+        }
+
+        .cell-dialog::backdrop {
+            background: rgba(12, 18, 24, 0.42);
+            backdrop-filter: blur(5px);
+        }
+
+        .cell-dialog__header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 22px 22px 0;
+        }
+
+        .cell-dialog__header h2 {
+            margin: 0;
+            color: var(--sql-ink);
+        }
+
+        .cell-dialog__content {
+            margin: 0;
+            padding: 20px 22px 24px;
+            max-height: 70vh;
+            overflow: auto;
+            border-top: 1px solid var(--sql-line);
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-family: "Cascadia Code", "Consolas", monospace;
+            font-size: 0.94rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 1100px) {
+            .hero {
+                grid-template-columns: 1fr;
+            }
+
+            .summary-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 780px) {
+            .sql-text-tool {
+                padding: 12px;
+            }
+
+            .hero__copy,
+            .drop-zone,
+            .file-card {
+                padding: 20px;
+            }
+
+            .info-strip,
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .file-card__header,
+            .cell-dialog__header,
+            .drop-zone__actions {
+                flex-direction: column;
+            }
+
+            .button,
+            .upload-button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <span>🔧</span>
+                <span>工具箱</span>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link">
+                            <span class="nav-icon">◎</span>
+                            <span>全部工具</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="JsonConverter.html" class="nav-link">
+                            <span class="nav-icon">{}</span>
+                            <span>JSON 美化</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="Base64.html" class="nav-link">
+                            <span class="nav-icon">🔠</span>
+                            <span>Base64 编解码</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="TransFormat.html" class="nav-link">
+                            <span class="nav-icon">⚡</span>
+                            <span>格式转换器</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="ToSplit.html" class="nav-link">
+                            <span class="nav-icon">↔️</span>
+                            <span>列转行工具</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="PasswordGenerator.html" class="nav-link">
+                            <span class="nav-icon">🔐</span>
+                            <span>密码生成器</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="splitManyData.html" class="nav-link">
+                            <span class="nav-icon">📊</span>
+                            <span>数据分割工具</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="SqlTextResult.html" class="nav-link active">
+                            <span class="nav-icon">🧾</span>
+                            <span>SQL 文本整理</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="downloader.html" class="nav-link">
+                            <span class="nav-icon">🎞️</span>
+                            <span>M3U8 下载器</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">SQL 文本结果整理器</h1>
+                <p class="page-description">
+                    导入 SQL Server Results to Text 导出的 TXT，自动拆分多个结果集，在浏览器内预览表格，并导出为可直接打开的 XLSX 工作簿。
+                </p>
+            </div>
+
+            <div class="tool-card">
+                <div class="sql-text-tool">
+                    <section class="hero">
+                        <div class="hero__copy">
+                            <p class="eyebrow">SQL Server Results To Text</p>
+                            <h2 class="hero__title">把 TXT 查询结果直接整理成可查看表格</h2>
+                            <p class="hero__text">
+                                支持读取 SQL Server Results to Text 形式的查询结果，自动拆分多个结果集，浏览器内预览，并导出成真正的 XLSX 工作簿。
+                            </p>
+                        </div>
+
+                        <div id="drop-zone" class="drop-zone" aria-label="拖放 SQL 导出的 TXT 文件">
+                            <p class="drop-zone__title">拖放 TXT 到这里</p>
+                            <p class="drop-zone__subtitle">或使用下方按钮选择一个或多个文件</p>
+
+                            <div class="drop-zone__actions">
+                                <label class="button button--primary upload-button" for="file-input">选择 TXT 文件</label>
+                                <input id="file-input" class="visually-hidden" type="file" accept=".txt,text/plain" multiple>
+                                <button id="export-all-btn" class="button button--secondary" type="button" disabled>导出全部为 XLSX</button>
+                                <button id="clear-btn" class="button button--ghost" type="button" disabled>清空结果</button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="info-strip" aria-label="使用说明">
+                        <div class="info-strip__item">
+                            <span class="info-strip__label">1</span>
+                            <p>导入 SQL Server 导出的 TXT 文件。</p>
+                        </div>
+                        <div class="info-strip__item">
+                            <span class="info-strip__label">2</span>
+                            <p>页面会自动识别每个结果集并渲染成表格。</p>
+                        </div>
+                        <div class="info-strip__item">
+                            <span class="info-strip__label">3</span>
+                            <p>点击导出按钮，生成 Excel 可直接打开的 XLSX 工作簿。</p>
+                        </div>
+                    </section>
+
+                    <section id="summary" class="summary-grid" aria-live="polite"></section>
+                    <section id="results" class="results"></section>
+                </div>
+            </div>
+
+            <footer class="footer">
+                <p>© 2025 在线工具集. 所有处理在本地完成</p>
+            </footer>
+        </main>
+    </div>
+
+    <dialog id="cell-dialog" class="cell-dialog">
+        <div class="cell-dialog__header">
+            <div>
+                <p class="eyebrow">单元格详情</p>
+                <h2 id="cell-dialog-title">内容预览</h2>
+            </div>
+            <button id="close-dialog-btn" class="button button--ghost" type="button">关闭</button>
+        </div>
+        <pre id="cell-dialog-content" class="cell-dialog__content"></pre>
+    </dialog>
+
+    <script src="sqlTextParser.js"></script>
+    <script src="sqlTextResult.js"></script>
+</body>
+</html>

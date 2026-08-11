@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M3U8 下载器 - 在线工具集</title>
+    <link rel="stylesheet" href="common.css">
+    <style>
+        .tool-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #dbeafe;
+            color: var(--primary-color);
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 18px;
+        }
+
+        .download-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.6fr) minmax(260px, 0.9fr);
+            gap: 20px;
+            align-items: start;
+        }
+
+        .download-panel {
+            padding: 26px;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+        }
+
+        .download-tabs {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            padding: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #dbeafe;
+            border-radius: 14px;
+            background: #eff6ff;
+        }
+
+        .download-tab {
+            border: none;
+            border-radius: 10px;
+            padding: 12px 14px;
+            background: transparent;
+            color: var(--secondary-color);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .download-tab.active {
+            background: var(--primary-color);
+            color: #ffffff;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.18);
+        }
+
+        .field-group {
+            margin-bottom: 16px;
+        }
+
+        .field-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .text-input {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 14px;
+            color: var(--text-color);
+            background: #ffffff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .text-input:focus,
+        select.text-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .consent-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 14px;
+            margin-bottom: 20px;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            background: #f8fbff;
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .consent-box input {
+            margin-top: 3px;
+            accent-color: var(--primary-color);
+        }
+
+        .action-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .action-row .btn {
+            min-width: 132px;
+            justify-content: center;
+        }
+
+        .playlist-panel {
+            margin-bottom: 20px;
+        }
+
+        .status-panel {
+            padding: 18px;
+            border-radius: 14px;
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        .status-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .progress-track {
+            height: 10px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: #1e293b;
+        }
+
+        .progress-fill {
+            width: 0;
+            height: 100%;
+            background: linear-gradient(90deg, #2563eb 0%, #06b6d4 100%);
+            transition: width 0.2s ease;
+        }
+
+        .status-percent {
+            margin-top: 10px;
+            text-align: right;
+            color: #93c5fd;
+            font-size: 14px;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .download-notes {
+            display: grid;
+            gap: 16px;
+        }
+
+        .note-card {
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+        }
+
+        .note-card h2 {
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: var(--text-color);
+        }
+
+        .note-card p,
+        .note-card li {
+            font-size: 14px;
+            color: var(--secondary-color);
+        }
+
+        .note-card ul {
+            padding-left: 20px;
+        }
+
+        .note-card.warning {
+            border-color: #fde68a;
+            background: linear-gradient(180deg, #fffbeb 0%, #ffffff 100%);
+        }
+
+        .note-card code {
+            padding: 2px 6px;
+            border-radius: 6px;
+            background: #e2e8f0;
+            color: #0f172a;
+        }
+
+        #error {
+            margin-top: 16px;
+        }
+
+        @media (max-width: 1100px) {
+            .download-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .download-panel {
+                padding: 20px;
+            }
+
+            .action-row .btn {
+                width: 100%;
+            }
+
+            .status-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <span>🔧</span>
+                <span>工具箱</span>
+            </div>
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link">
+                            <span class="nav-icon">◎</span>
+                            <span>全部工具</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="JsonConverter.html" class="nav-link">
+                            <span class="nav-icon">{}</span>
+                            <span>JSON 美化</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="Base64.html" class="nav-link">
+                            <span class="nav-icon">🔠</span>
+                            <span>Base64 编解码</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="TransFormat.html" class="nav-link">
+                            <span class="nav-icon">⚡</span>
+                            <span>格式转换器</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="ToSplit.html" class="nav-link">
+                            <span class="nav-icon">↔️</span>
+                            <span>列转行工具</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="PasswordGenerator.html" class="nav-link">
+                            <span class="nav-icon">🔐</span>
+                            <span>密码生成器</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="splitManyData.html" class="nav-link">
+                            <span class="nav-icon">📊</span>
+                            <span>数据分割工具</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="SqlTextResult.html" class="nav-link">
+                            <span class="nav-icon">🧾</span>
+                            <span>SQL 文本整理</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="downloader.html" class="nav-link active">
+                            <span class="nav-icon">🎞️</span>
+                            <span>M3U8 下载器</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">M3U8 下载器</h1>
+                <p class="page-description">
+                    在浏览器本地解析已获授权的播放地址，下载并按顺序合并 MPEG-TS 分片，不经过服务端存储。
+                </p>
+            </div>
+
+            <div class="tool-card">
+                <div class="download-layout">
+                    <section class="download-panel">
+                        <span class="tool-badge">本地处理 / 仅限授权内容</span>
+
+                        <div class="download-tabs">
+                            <button class="download-tab tab active" type="button" data-mode="page">网页 URL</button>
+                            <button class="download-tab tab" type="button" data-mode="m3u8">直接 m3u8</button>
+                        </div>
+
+                        <div class="field-group">
+                            <label class="field-label" id="inputLabel" for="urlInput">包含视频的网页地址</label>
+                            <input class="text-input input" id="urlInput" placeholder="https://example.com/video-page" autocomplete="off">
+                        </div>
+
+                        <label class="consent-box">
+                            <input id="agree" type="checkbox">
+                            <span>我确认自己拥有该视频，或已获得下载与保存授权。</span>
+                        </label>
+
+                        <div class="action-row">
+                            <button class="btn btn-primary action primary" id="analyze" type="button" disabled>解析地址</button>
+                            <button class="btn btn-success action secondary" id="download" type="button" disabled>下载并合并</button>
+                            <button class="btn btn-outline action cancel" id="cancel" type="button" hidden>取消</button>
+                        </div>
+
+                        <div class="playlist-panel result" id="result" hidden>
+                            <label class="field-label" for="playlist">发现的播放列表</label>
+                            <select class="text-input input" id="playlist"></select>
+                        </div>
+
+                        <div class="status-panel">
+                            <div class="status-header">
+                                <span>状态</span>
+                                <span id="statusText">等待输入</span>
+                            </div>
+                            <div class="progress-track">
+                                <div class="progress-fill" id="bar"></div>
+                            </div>
+                            <div class="status-percent" id="percent">0%</div>
+                        </div>
+
+                        <div class="error-message" id="error"></div>
+                    </section>
+
+                    <aside class="download-notes">
+                        <div class="note-card">
+                            <h2>使用边界</h2>
+                            <ul>
+                                <li>仅适用于你拥有或获授权的视频。</li>
+                                <li>不绕过登录、付费墙、加密或 DRM。</li>
+                                <li>下载和合并都在本地浏览器内完成。</li>
+                            </ul>
+                        </div>
+
+                        <div class="note-card warning">
+                            <h2>CORS 限制</h2>
+                            <p>目标网页和媒体服务器必须允许跨域读取。若网页源码中抓不到地址，通常需要从开发者工具 Network 中复制你已获授权的 m3u8 链接直接使用。</p>
+                        </div>
+
+                        <div class="note-card">
+                            <h2>当前输出</h2>
+                            <p>工具会将 MPEG-TS 分片按顺序合并为一个 <code>.ts</code> 文件。大文件会占用较多浏览器内存，建议优先选择稳定网络环境。</p>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <footer class="footer">
+                <p>© 2025 在线工具集. 所有处理在本地完成</p>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        (() => {
+            let mode = 'page';
+            let controller = null;
+            let busy = false;
+
+            const $ = (id) => document.getElementById(id);
+            const input = $('urlInput');
+            const agree = $('agree');
+            const analyze = $('analyze');
+            const download = $('download');
+            const cancel = $('cancel');
+            const result = $('result');
+            const playlist = $('playlist');
+
+            const setError = (message) => {
+                const errorElement = $('error');
+                errorElement.textContent = message || '';
+                errorElement.style.display = message ? 'block' : 'none';
+            };
+
+            const setStatus = (text, percent) => {
+                $('statusText').textContent = text;
+                if (percent !== undefined) {
+                    $('bar').style.width = percent + '%';
+                    $('percent').textContent = percent + '%';
+                }
+            };
+
+            const refresh = () => {
+                const hasInput = input.value.trim().length > 0;
+                const hasPlaylist = Boolean(playlist.value);
+                analyze.disabled = busy || !agree.checked || !hasInput;
+                download.disabled = busy || !agree.checked || !(hasPlaylist || (mode === 'm3u8' && hasInput));
+                cancel.hidden = !busy;
+            };
+
+            const setBusy = (value) => {
+                busy = value;
+                refresh();
+            };
+
+            const abs = (value, base = window.location.href) => {
+                return new URL(value.trim().replace(/^['"]|['"]$/g, ''), base).href;
+            };
+
+            const fetchText = async (url, signal) => {
+                const response = await fetch(url, { signal, credentials: 'omit' });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${url}`);
+                }
+                return response.text();
+            };
+
+            const extractM3u8Urls = (html, base) => {
+                const decoded = html
+                    .replace(/\\u0026/g, '&')
+                    .replace(/\\u002F/gi, '/')
+                    .replace(/\\\//g, '/');
+
+                const matches = decoded.match(/(?:https?:\\?\/\\?\/|\/|\.\/|\.\.\/)[^\s'"<>]+?\.m3u8(?:\?[^\s'"<>]*)?/gi) || [];
+                return [...new Set(matches.map((item) => abs(item.replace(/\\\//g, '/'), base)))];
+            };
+
+            const parseMasterPlaylist = (text, base) => {
+                const lines = text.split(/\r?\n/).map((line) => line.trim());
+                const variants = [];
+
+                for (let index = 0; index < lines.length; index += 1) {
+                    if (!lines[index].startsWith('#EXT-X-STREAM-INF:')) {
+                        continue;
+                    }
+
+                    const attributes = lines[index].slice(lines[index].indexOf(':') + 1);
+                    const bandwidth = Number(attributes.match(/BANDWIDTH=(\d+)/)?.[1] || 0);
+                    const resolution = attributes.match(/RESOLUTION=([^,]+)/)?.[1] || '未知';
+                    let nextIndex = index + 1;
+
+                    while (nextIndex < lines.length && (!lines[nextIndex] || lines[nextIndex].startsWith('#'))) {
+                        nextIndex += 1;
+                    }
+
+                    if (lines[nextIndex]) {
+                        variants.push({
+                            bandwidth,
+                            resolution,
+                            url: abs(lines[nextIndex], base)
+                        });
+                    }
+                }
+
+                return variants.sort((left, right) => right.bandwidth - left.bandwidth);
+            };
+
+            const parseMediaPlaylist = (text, base) => {
+                if (/#EXT-X-KEY:(?![^\n]*METHOD=NONE)/i.test(text)) {
+                    throw new Error('该播放列表包含加密分片。本工具不提供解密或 DRM 绕过功能。');
+                }
+
+                if (/#EXT-X-MAP:/i.test(text)) {
+                    throw new Error('当前版本暂不处理 fMP4 或 CMAF 播放列表，请使用 MPEG-TS 分片的 m3u8。');
+                }
+
+                const segments = text
+                    .split(/\r?\n/)
+                    .map((line) => line.trim())
+                    .filter((line) => line && !line.startsWith('#'))
+                    .map((line) => abs(line, base));
+
+                if (!segments.length) {
+                    throw new Error('播放列表中没有可下载的媒体分片。');
+                }
+
+                return segments;
+            };
+
+            document.querySelectorAll('.tab').forEach((tab) => {
+                tab.addEventListener('click', () => {
+                    mode = tab.dataset.mode;
+                    document.querySelectorAll('.tab').forEach((item) => item.classList.toggle('active', item === tab));
+                    $('inputLabel').textContent = mode === 'page' ? '包含视频的网页地址' : 'm3u8 播放列表地址';
+                    input.placeholder = mode === 'page' ? 'https://example.com/video-page' : 'https://cdn.example.com/path/index.m3u8';
+                    playlist.innerHTML = '';
+                    result.hidden = true;
+                    refresh();
+                });
+            });
+
+            input.addEventListener('input', refresh);
+            agree.addEventListener('change', refresh);
+
+            analyze.addEventListener('click', async () => {
+                setError('');
+                setStatus('正在解析...', 0);
+                setBusy(true);
+                controller = new AbortController();
+
+                try {
+                    let urls;
+
+                    if (mode === 'm3u8') {
+                        urls = [abs(input.value)];
+                    } else {
+                        const pageUrl = abs(input.value);
+                        const html = await fetchText(pageUrl, controller.signal);
+                        urls = extractM3u8Urls(html, pageUrl);
+
+                        if (!urls.length) {
+                            throw new Error('网页源码中没有发现 m3u8。它可能由脚本动态加载，或目标网站未允许跨域访问。请从开发者工具 Network 中复制 m3u8 地址。');
+                        }
+                    }
+
+                    playlist.innerHTML = urls.map((url) => {
+                        const safeValue = url.replaceAll('&', '&amp;').replaceAll('"', '&quot;');
+                        return `<option value="${safeValue}">${url}</option>`;
+                    }).join('');
+                    result.hidden = false;
+                    setStatus(`已发现 ${urls.length} 个播放列表`, 0);
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        setError(error.message);
+                    }
+                    setStatus(error.name === 'AbortError' ? '已取消' : '解析失败');
+                } finally {
+                    setBusy(false);
+                }
+            });
+
+            download.addEventListener('click', async () => {
+                setError('');
+                setStatus('正在读取播放列表...', 0);
+                setBusy(true);
+                controller = new AbortController();
+
+                try {
+                    let url = playlist.value || abs(input.value);
+                    let text = await fetchText(url, controller.signal);
+                    const variants = parseMasterPlaylist(text, url);
+
+                    if (variants.length) {
+                        url = variants[0].url;
+                        setStatus(`正在使用最高码率流 ${variants[0].resolution}...`, 0);
+                        text = await fetchText(url, controller.signal);
+                    }
+
+                    const segments = parseMediaPlaylist(text, url);
+                    const parts = new Array(segments.length);
+                    let nextIndex = 0;
+                    let finished = 0;
+
+                    const worker = async () => {
+                        while (nextIndex < segments.length) {
+                            const currentIndex = nextIndex;
+                            nextIndex += 1;
+
+                            const response = await fetch(segments[currentIndex], {
+                                signal: controller.signal,
+                                credentials: 'omit'
+                            });
+
+                            if (!response.ok) {
+                                throw new Error(`分片 ${currentIndex + 1} 下载失败: HTTP ${response.status}`);
+                            }
+
+                            parts[currentIndex] = new Uint8Array(await response.arrayBuffer());
+                            finished += 1;
+                            setStatus(`正在下载分片 ${finished}/${segments.length}...`, Math.round((finished / segments.length) * 100));
+                        }
+                    };
+
+                    await Promise.all(Array.from({ length: Math.min(6, segments.length) }, worker));
+
+                    setStatus('正在合并视频...', 100);
+
+                    const blob = new Blob(parts, { type: 'video/mp2t' });
+                    const href = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = href;
+                    link.download = `video-${new Date().toISOString().replace(/[:.]/g, '-')}.ts`;
+                    link.click();
+                    setTimeout(() => URL.revokeObjectURL(href), 60000);
+                    setStatus('下载完成', 100);
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        setError(error.message);
+                    }
+                    setStatus(error.name === 'AbortError' ? '已取消' : '下载失败');
+                } finally {
+                    setBusy(false);
+                }
+            });
+
+            cancel.addEventListener('click', () => controller?.abort());
+            refresh();
+        })();
+    </script>
+</body>
+</html>
